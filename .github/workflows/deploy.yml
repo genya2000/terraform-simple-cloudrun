@@ -1,47 +1,37 @@
-name: Deploy to Cloud Run (Terraform)
+name: Deploy Cloud Run
 
 on:
   push:
-    branches:
-      - main
+    branches: ["main"]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    env:
-      PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-      REGION: asia-northeast1
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+    - uses: actions/checkout@v3
 
-      - name: Set up Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v1
-        with:
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v1
+      with:
+        service_account_key: ${{ secrets.GCP_SA_KEY }}
+        project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-      - name: Authenticate Docker to GCR
-        run: gcloud auth configure-docker
+    - name: Configure Docker auth
+      run: |
+        gcloud auth configure-docker asia-northeast1-docker.pkg.dev
 
-      - name: Build Docker image
-        run: |
-          docker build -t gcr.io/${{ env.PROJECT_ID }}/terraform-simple-cloudrun:${{ github.sha }} ./app
-          docker push gcr.io/${{ env.PROJECT_ID }}/terraform-simple-cloudrun:${{ github.sha }}
+    - name: Build Docker image
+      run: |
+        docker build -t asia-northeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/terraform-simple-cloudrun/app:${{ github.sha }} ./app
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
+    - name: Push Docker image
+      run: |
+        docker push asia-northeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/terraform-simple-cloudrun/app:${{ github.sha }}
 
-      - name: Terraform Init
-        working-directory: ./infra
-        run: terraform init
-
-      - name: Terraform Apply
-        working-directory: ./infra
-        run: |
-          terraform apply -auto-approve \
-            -var="project_id=${{ env.PROJECT_ID }}" \
-            -var="region=${{ env.REGION }}" \
-            -var="image=gcr.io/${{ env.PROJECT_ID }}/terraform-simple-cloudrun:${{ github.sha }}"
+    - name: Deploy to Cloud Run
+      run: |
+        gcloud run deploy terraform-simple-cloudrun \
+        --image asia-northeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/terraform-simple-cloudrun/app:${{ github.sha }} \
+        --region asia-northeast1 \
+        --allow-unauthenticated
