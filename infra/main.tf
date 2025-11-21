@@ -13,7 +13,7 @@ provider "google" {
 }
 
 resource "google_cloud_run_service" "app" {
-  name     = "simple-cloudrun"
+  name     = "terraform-simple-cloudrun"
   location = var.region
 
   template {
