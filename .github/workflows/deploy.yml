@@ -23,15 +23,16 @@ jobs:
 
     - name: Build Docker image
       run: |
-        docker build -t asia-northeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/terraform-simple-cloudrun/app:${{ github.sha }} ./app
+        docker build -t asia-northeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/terraform-simple-cloudrun/terraform-simple-cloudrun:${{ github.sha }} ./app
 
     - name: Push Docker image
       run: |
-        docker push asia-northeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/terraform-simple-cloudrun/app:${{ github.sha }}
+        docker push asia-northeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/terraform-simple-cloudrun/terraform-simple-cloudrun:${{ github.sha }}
 
     - name: Deploy to Cloud Run
       run: |
         gcloud run deploy terraform-simple-cloudrun \
-        --image asia-northeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/terraform-simple-cloudrun/app:${{ github.sha }} \
+        --image asia-northeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/terraform-simple-cloudrun/terraform-simple-cloudrun:${{ github.sha }} \
         --region asia-northeast1 \
         --allow-unauthenticated
+
