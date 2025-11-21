@@ -28,8 +28,8 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t gcr.io/${{ env.PROJECT_ID }}/simple-cloudrun:${{ github.sha }} ./app
-          docker push gcr.io/${{ env.PROJECT_ID }}/simple-cloudrun:${{ github.sha }}
+          docker build -t gcr.io/${{ env.PROJECT_ID }}/terraform-simple-cloudrun:${{ github.sha }} ./app
+          docker push gcr.io/${{ env.PROJECT_ID }}/terraform-simple-cloudrun:${{ github.sha }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -44,4 +44,4 @@ jobs:
           terraform apply -auto-approve \
             -var="project_id=${{ env.PROJECT_ID }}" \
             -var="region=${{ env.REGION }}" \
-            -var="image=gcr.io/${{ env.PROJECT_ID }}/simple-cloudrun:${{ github.sha }}"
+            -var="image=gcr.io/${{ env.PROJECT_ID }}/terraform-simple-cloudrun:${{ github.sha }}"
